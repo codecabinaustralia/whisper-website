@@ -1,11 +1,11 @@
 'use client';
 
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-export default function InvitePage() {
+function InviteInner() {
   const params = useSearchParams();
   const code = params.get('code');
   const [status, setStatus] = useState('loading');
@@ -26,8 +26,8 @@ export default function InvitePage() {
         } else {
           setStatus('invalid');
         }
-      } catch (error) {
-        console.error('Error fetching invite:', error);
+      } catch (e) {
+        console.error(e);
         setStatus('invalid');
       }
     };
@@ -35,17 +35,8 @@ export default function InvitePage() {
     fetchInvite();
   }, [code]);
 
-  if (status === 'loading') {
-    return <div className="text-center mt-20">Checking invite link...</div>;
-  }
-
-  if (status === 'invalid') {
-    return (
-      <div className="text-center mt-20 text-red-600">
-        Invalid or expired invite link.
-      </div>
-    );
-  }
+  if (status === 'loading') return <div className="text-center mt-20">Checking invite link...</div>;
+  if (status === 'invalid') return <div className="text-center mt-20 text-red-600">Invalid or expired invite.</div>;
 
   return (
     <div className="max-w-lg mx-auto mt-24 p-6 bg-white rounded-lg shadow-lg">
@@ -60,5 +51,13 @@ export default function InvitePage() {
         Download the Whisper App
       </a>
     </div>
+  );
+}
+
+export default function InvitePage() {
+  return (
+    <Suspense fallback={<div className="text-center mt-20">Loading...</div>}>
+      <InviteInner />
+    </Suspense>
   );
 }
